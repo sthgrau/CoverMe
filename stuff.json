@@ -1,0 +1,16 @@
+[
+{"id": "CoverLetterOpening", "level": 99, "line": "I hate making cover letters, so I made a program to make my cover letters. See my github page at https://github.com/sthgrau/CoverMe .\n\nHere are some hightlights of my skills that match the job description:" },
+{"id": "perl", "level": 4, "line": "Perl was my goto text parser for many years." },
+{"id": "(vsphere|vmware)", "level": 3, "line": "I have experience maintaining and operating Vmware servers, and some exposure to automating the installation." },
+{"id": "(mysql|sql server)", "level": 3, "line": "I have had a fair amount of experience maintaining and using databases such as Mysql and MS Sql Server for structured data." },
+{"id": "node.js", "level": 2, "line": "I have recently had exposure to some node.js at work, then later for some personal projects." },
+{"id": "automation", "level": 5, "line": "Automating things has always been a passion of mine, and I believe I show aptitude in abstraction and modeling in that capacity." },
+{"id": "javascript", "level": 3, "line": "Javascript is a very conventient language to know when dealing with rapid development interfaces. Knowing it has helped me get ideas out." },
+{"id": "(bash|shell script|shell scripting)", "level": 5, "line": "Shell scripting is the first tool I go to for a solution. It is the usually the fastest to implement and the easiest to read." },
+{"id": "(c#|.net)", "level": 2, "line": "I have some minor exposure to C# and .Net from previous work projects. It is conventient to be able to make apps for Windows clients." },
+{"id": "git", "level": 3, "line": "I have used git in professional and personal projects for least 5 years." },
+{"id": "python", "level": 4, "line": "Python has been my complex parser of choice for the past 5 years." },
+{"id": "ansible", "level": 1, "line": "I have recently been checking out Ansible, but haven't had a whole lot of experience." },
+{"id": "(linux|redhat|red hat|debian)", "level": 5, "line": "I have used linux (Red Hat and Debian) for over 20 years, in both personal and professional contexts." },
+{"id": "CoverLetterClosing", "level": -99, "line": "\nThanks for your time.\nStephen Grau" }
+]

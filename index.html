@@ -1,0 +1,16 @@
+<html>
+<head><title>CoverMe</title></head>
+<body onload="fillFonts()">
+<style type="text/css">.noprint { display: none; } </style>
+<script src="app.js"></script>
+<div id="noprint">
+Enter job description here:
+<textarea id="desc" style="width: 100%; height: 45%;"></textarea>
+<br>
+<button id="Submit" onclick="doit()">Make Cover Letter</button>
+<select id="printFont" oninput="document.getElementById('output').style.fontFamily = document.getElementById('printFont').value;"></select>
+<br>
+</div>
+<div id="output" title="click this to toggle print view" onclick="document.getElementById('noprint').classList.toggle('noprint');" style="width: 100%; height: 100%;">Sample text to try out the fonts.. The ones at the top are web safe, the others, maybe not so much.</div>
+</body>
+</html>
