@@ -1,15 +1,17 @@
 <html>
 <head><title>CoverMe</title></head>
 <body onload="fillFonts()">
-<style type="text/css">.noprint { display: none; } input.eid { width: 200px; } input.elevel { width: 30px; } input.etype { width: 60px; } input.eline { width: 80%; } </style>
+<style type="text/css">#output { font-size: 1.5em; } .noprint { display: none; } input.eid { width: 200px; } input.elevel { width: 30px; } input.etype { width: 60px; } input.eline { width: 80%; } </style>
 <script src="app.js"></script>
 <div id="noprint">
 <div id="profile" style="width: 100%; height: auto;">
 <textarea id="rawProfile" style="width: 100%; height: 10%;"></textarea>
-<button id="loadSthgrau" title="Because that's what's really important here" onclick="loadProfile('remote')">Load sthgrau</button>
+Username: <input id="username" value="sthgrau" style="width: 60px;">
+<button id="loadRemote" title="Load from remote database" onclick="loadProfile('remote')">Load remote</button>
 <button id="loadLocal" title="Load profile from local storage" onclick="loadProfile('local')">Load local</button>
-<button id="saveLocal" title="Save profile to local storage" onclick="saveLocalProfile()">Save local</button>
-<button id="showHideEditor" title="Show editor" onclick="document.getElementById('lineItems').classList.toggle('noprint'); this.innerText = ( this.innerText == 'v' ) ? '^' : 'v';" style="display: float; align: right;">v</button>
+<button id="saveLocal" title="Save profile to local storage" onclick="saveProfile('local')">Save local</button>
+<button id="saveRemote" title="Save profile to remote storage" onclick="saveProfile('remote')">Save remote</button>
+<button id="showHideEditor" title="Show editor" onclick="document.getElementById('lineItems').classList.toggle('noprint'); this.innerText = ( this.innerText == 'Show editor' ) ? 'Hide editor' : 'Show editor';" style="float: right;">Show editor</button>
 <div id="lineItems" class="noprint">
 </div>
 </div>
@@ -17,9 +19,9 @@ Enter job description here:
 <textarea id="desc" style="width: 100%; height: 45%;"></textarea>
 <br>
 <button id="Submit" onclick="doit()">Make Cover Letter</button>
-<select id="printFont" oninput="document.getElementById('output').style.fontFamily = document.getElementById('printFont').value;"></select>
+<select id="printFont" list="fonts" oninput="setFont(this.value);"></select>
 <br>
 </div>
-<div id="output" title="click this to toggle print view" onclick="document.getElementById('noprint').classList.toggle('noprint');" style="width: 100%; height: 100%;">Sample text to try out the fonts.. The ones at the top are web safe, the others, maybe not so much.</div>
+<div id="output" title="Click this to toggle print view. Shift click to remove individual lines." onclick="if ( ! event.shiftKey ) { document.getElementById('noprint').classList.toggle('noprint'); }" style="width: 100%; height: 100%;">Sample text to try out the fonts.. Using Google Fonts, so there are too many. Someone might be disppointed if I slim it down..</div>
 </body>
 </html>

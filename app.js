@@ -1,11 +1,16 @@
 var myJSON = "";
 var mykeys = {};
 var profileName = "profile";
+var userName = "";
 
-function readTextFile(file) {
+function readTextFile(file, method="GET", postType="", postData="") {
     var rawFile = new XMLHttpRequest();
     var myreturn="";
-    rawFile.open("GET", file, false);
+    async = false;
+    if ( method == "POST" ) {
+        async = true;
+    }
+    rawFile.open(method, file, async);
     rawFile.onreadystatechange = function ()
     {
         if(rawFile.readyState === 4)
@@ -17,53 +22,43 @@ function readTextFile(file) {
             }
         }
     }
-   rawFile.send(null);
-   return myreturn;
+    if ( method == "POST" ) {
+        rawFile.setRequestHeader("Content-length", postData.length);
+        rawFile.setRequestHeader("Content-type", postType);
+    }
+    rawFile.send(postData);
+    return myreturn;
 }
-var fonts = [ 'Georgia, serif' , '"Palatino Linotype", "Book Antiqua", Palatino, serif' , '"Times New Roman", Times, serif',
-             'Arial, Helvetica, sans-serif' , '"Arial Black", Gadget, sans-serif' , '"Comic Sans MS", cursive, sans-serif' ,
-             'Impact, Charcoal, sans-serif' , '"Lucida Sans Unicode", "Lucida Grande", sans-serif' , 'Tahoma, Geneva, sans-serif' ,
-             '"Trebuchet MS", Helvetica, sans-serif' , 'Verdana, Geneva, sans-serif' , '"Courier New", Courier, monospace' ,
-             '"Lucida Console", Monaco, monospace' ,
-'Abel', 
-'Aclonica', 
-'Actor', 
-'Advent Pro', 
-'Alegreya', 
-'Alegreya Sans SC', 
-'Allan', 
-'Allerta Stencil', 
-'Dekko', 
-'Didact Gothic', 
-'Gruppo', 
-'Kalam', 
-'Merienda', 
-'Nova Flat', 
-'Century Gothic, sans-serif', 
-'"Arial Narrow", sans-serif', 
-'Verdana, Geneva, sans-serif', 
-'Gill Sans / Gill Sans MT, sans-serif', 
-'"Copperplate Gothic Bold", sans-serif', 
-'"Copperplate Gothic Light", sans-serif', 
-'"URW Gothic L", "Century Gothic", sans-serif'
-            ];
 
 function fillFonts() {
+    var myFonts = readTextFile("google_fonts.txt").split("\n");
     var fs = document.getElementById("printFont");
     fs.innerHTML=""
-    for ( var i = 0; i < fonts.length; i++ ) {
+    for ( var i = 0; i < myFonts.length; i++ ) {
         var myop = document.createElement('option');
-        var display = fonts[i].split(',')[0].replace(/"/g,'');
-        var myf = fonts[i];
+        //var display = fonts[i].split(',')[0].replace(/"/g,'');
+        var myf = myFonts[i];
         myop.value=myf;
-        myop.text=display;
+        myop.text=myf;
         fs.appendChild(myop);
     }
-    document.getElementById('output').style.fontFamily = fs.value;
+    setFont(fs.value);
+}
+
+function setFont(myFont) {
+    styleid = 'font-' + myFont;
+    if ( ! document.getElementById(styleid) ) {
+        var inp=document.createElement('link');
+        inp.rel='stylesheet';
+        inp.id=styleid;
+        inp.href='https://fonts.googleapis.com/css?family=' + myFont;
+        document.head.appendChild(inp);
+    }
+    document.getElementById('output').style.fontFamily = myFont;
 }
 
 function getProfileKeys() {
-    myJSON = JSON.parse(document.getElementById("rawProfile").value).sort(function(a,b) { return parseInt(b.level) - parseInt(a.level); } );
+    myJSON = JSON.parse(document.getElementById("rawProfile").value).lines.sort(function(a,b) { return parseInt(b.level) - parseInt(a.level); } );
     mykeys = {};
     for ( var i = 0; i < myJSON.length; i++ ) {
         myJSON[i].found=0;
@@ -71,8 +66,18 @@ function getProfileKeys() {
     }
 }
 
-function saveLocalProfile(loc) {
-    localStorage[profileName] = document.getElementById('rawProfile').value;
+function saveProfile(loc) {
+    if ( loc == "local" ) {
+        localStorage[profileName] = document.getElementById('rawProfile').value;
+    }
+    else if ( loc == "remote" ) {
+        var user = document.getElementById('username').value;
+        var font = document.getElementById('printFont').value;
+        if ( user ) {
+            var out = readTextFile("/db", "POST", "application/json", JSON.stringify({"user": user, "font": font, "lines": myJSON}));
+        }
+        console.log(out);
+    }
 }
 
 function loadProfile(loc) {
@@ -83,13 +88,16 @@ function loadProfile(loc) {
         }
     }
     else if ( loc == "remote" ) {
-        myStuff = readTextFile("stuff.json");
+      //  myStuff = readTextFile("stuff.json");
+        var user = document.getElementById('username').value;
+        console.log(user);
+        if ( user ) {
+            myStuff = readTextFile("/db?user=" + user);
+            console.log("you got ",myStuff);
+        }
     }
-    if ( myStuff !== "" ) {
-        document.getElementById('rawProfile').value = myStuff;
         var listele = document.getElementById('lineItems');
         listele.innerHTML="";
-        myJSON = JSON.parse(myStuff).sort(function(a,b) { return parseInt(b.level) - parseInt(a.level); } );
         var tit = document.createElement('span');
         var tbr = document.createElement('br');
         var idt = document.createElement('input');
@@ -118,6 +126,14 @@ function loadProfile(loc) {
         tit.appendChild(typet);
         tit.appendChild(tbr);
         listele.appendChild(tit);
+    if ( myStuff !== "" ) {
+        document.getElementById('rawProfile').value = JSON.stringify(JSON.parse(myStuff), null, '\t');
+        myJSON = JSON.parse(myStuff).lines.sort(function(a,b) { return parseInt(b.level) - parseInt(a.level); } );
+        var myFont = JSON.parse(myStuff).font;
+        if ( myFont ) {
+            document.getElementById('printFont').value = myFont;
+            setFont(myFont);
+        }
         for ( var i = 0; i < myJSON.length; i++ ) {
             myJSON[i].found=0;
             var br = document.createElement('br');
@@ -150,13 +166,16 @@ function loadProfile(loc) {
             listele.appendChild(ele);
         }
         getProfileKeys();
+    }
 
         var but = document.createElement('button');
         but.innerText = "+";
         but.id = "addButton";
         but.onclick = (function(e) { 
+            var sel=document.getSelection().toString();
             var br = document.createElement('br');
             var ele = document.createElement('span');
+            ele.className = 'listItem';
             var idf = document.createElement('input');
             idf.className = 'eid';
             ele.appendChild(idf);
@@ -178,11 +197,16 @@ function loadProfile(loc) {
             });
             ele.appendChild(br);
             e.target.parentNode.insertBefore(ele,e.target);
+            if ( sel ) {
+                idf.value=sel;
+                levelf.focus();
+                levelf.select();
+            }
         });
         listele.appendChild(but);
 
         var sav = document.createElement('button');
-        sav.innerText = "Save Local";
+        sav.innerText = "Save to session";
         sav.id = "saveButton";
         sav.onclick = (function(e) { 
             var newJson = [];
@@ -195,12 +219,15 @@ function loadProfile(loc) {
                     newJson.push({id, level, line, type});
                 }
             });
-            document.getElementById('rawProfile').value = JSON.stringify(newJson, null, '\t');
-            localStorage[profileName] = JSON.stringify(newJson, null, '\t');
+            var newNewJson = {"font": document.getElementById("printFont").value, "lines": newJson};
+            document.getElementById('rawProfile').value = JSON.stringify(newNewJson, null, '\t');
+            localStorage[profileName] = JSON.stringify(newNewJson, null, '\t');
             getProfileKeys();
+            document.getElementById('lineItems').classList.toggle('noprint');
+            var edBut = document.getElementById('showHideEditor');
+            edBut.innerText = ( edBut.innerText == 'Show editor' ) ? 'Hide editor' : 'Show editor';
         });
         listele.appendChild(sav);
-    }
 }
 
 function doit() {
@@ -214,14 +241,22 @@ function doit() {
     }
     myspan = document.getElementById('output');
     myspan.innerHTML = "";
-    var bp=0;
     for ( var i = 0; i < myJSON.length; i++ ) {
         if ( mykeys[myJSON[i].id].found === 1 || myJSON[i].level === 99 || myJSON[i].level === -99 ) {
             var mys = document.createElement('span');
-            mys.innerHTML = myJSON[i].line.replace(/\n/g, "<BR>");
+            mys.innerHTML = myJSON[i].line.replace(/\n/g, "<BR>") + "<BR>";
+            mys.onclick = (function(e) { 
+                if ( e.shiftKey) {
+                    e.target.remove();
+                }
+                if ( document.selection ) {
+                    document.selection.empty();
+                } else if ( window.getSelection ) {
+                    window.getSelection().removeAllRanges();
+                }
+                return false;
+            });
             myspan.appendChild(mys);
-            myspan.innerHTML += "<br>\n";
-            bp=1;
         }
     }
     document.getElementById('noprint').classList.toggle('noprint');
