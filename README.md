@@ -6,4 +6,4 @@ The profile can now be saved to the remote server, that way, others can see your
 
 Test page running here: http://cm.2id.us
 
-RE: pdf hyperlinks using Microsoft Windows. I have only been able to print to pdf while retaining links in Firefox/Pale Moon and the Edge browser. On the Edge browser didn't have page meta information in the corners.
+RE: pdf hyperlinks using Microsoft Windows. I have only been able to print to pdf while retaining links in Firefox/Pale Moon and the Edge browser. On the Edge browser didn't have page meta information in the corners. Native Chrome "Save to PDF" printing also worked without meta-information.
