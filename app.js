@@ -1,7 +1,9 @@
+var blankJSON = '{"lines": [{ "id": "CoverLetterOpening", "level": 99, "line": "Enter an opening here", "type": "coverLetter", "found": 0},{ "id": "CoverLetterClosing", "level": -99, "line": "Enter an closing here", "type": "coverLetter", "found": 0}]}';
 var myJSON = "";
 var mykeys = {};
 var profileName = "profile";
 var userName = "";
+var coverLetterType = "coverLetter";
 
 function readTextFile(file, method="GET", postType="", postData="") {
     var rawFile = new XMLHttpRequest();
@@ -30,6 +32,17 @@ function readTextFile(file, method="GET", postType="", postData="") {
     return myreturn;
 }
 
+function promiseMeAFile(file, element, callback=function () {console.log('done')}) {
+    let prom = new Promise((resolve, reject) => {
+        element.src=file;
+        element.onload = function() {
+            if ( typeof callback == "function" ) {
+                callback();
+            }
+        }
+    });
+}
+
 function fillFonts() {
     var myFonts = readTextFile("google_fonts.txt").split("\n");
     var fs = document.getElementById("printFont");
@@ -46,7 +59,7 @@ function fillFonts() {
 }
 
 function setFont(myFont) {
-    styleid = 'font-' + myFont;
+    var styleid = 'font-' + myFont;
     if ( ! document.getElementById(styleid) ) {
         var inp=document.createElement('link');
         inp.rel='stylesheet';
@@ -82,7 +95,11 @@ function saveProfile(loc) {
 
 function loadProfile(loc) {
     var myStuff = "";
-    if ( loc == "local" ) {
+    if ( loc == "new" ) {
+        myStuff = blankJSON;
+        document.getElementById('username').value = "";
+    }
+    else if ( loc == "local" ) {
         if ( typeof(localStorage[profileName] ) != 'undefined' ) {
             myStuff = localStorage[profileName];
         }
@@ -90,10 +107,8 @@ function loadProfile(loc) {
     else if ( loc == "remote" ) {
       //  myStuff = readTextFile("stuff.json");
         var user = document.getElementById('username').value;
-        console.log(user);
         if ( user ) {
             myStuff = readTextFile("/db?user=" + user);
-            console.log("you got ",myStuff);
         }
     }
         var listele = document.getElementById('lineItems');
@@ -230,6 +245,25 @@ function loadProfile(loc) {
         listele.appendChild(sav);
 }
 
+function addDocChild(line, ele, myclass="line") {
+    var mys = document.createElement('span');
+    mys.className = myclass;
+    mys.innerHTML = line.replace(/\n/g, "<BR>") + "<BR>";
+    mys.onclick = (function(e) { 
+        if ( e.shiftKey) {
+            e.target.remove();
+        }
+        if ( document.selection ) {
+            document.selection.empty();
+        } else if ( window.getSelection ) {
+            window.getSelection().removeAllRanges();
+        }
+        return false;
+    });
+    ele.appendChild(mys);
+    return mys;
+}
+
 function doit() {
     var desc = " " + document.getElementById('desc').value.replace(/[.,;:,.'"\/\]\[\-=_+!@#$%^&*()`~]+/g, " ") + " ";
     for ( var tkey in mykeys ) {
@@ -241,23 +275,40 @@ function doit() {
     }
     myspan = document.getElementById('output');
     myspan.innerHTML = "";
-    for ( var i = 0; i < myJSON.length; i++ ) {
-        if ( mykeys[myJSON[i].id].found === 1 || myJSON[i].level === 99 || myJSON[i].level === -99 ) {
-            var mys = document.createElement('span');
-            mys.innerHTML = myJSON[i].line.replace(/\n/g, "<BR>") + "<BR>";
-            mys.onclick = (function(e) { 
-                if ( e.shiftKey) {
-                    e.target.remove();
-                }
-                if ( document.selection ) {
-                    document.selection.empty();
-                } else if ( window.getSelection ) {
-                    window.getSelection().removeAllRanges();
-                }
-                return false;
-            });
-            myspan.appendChild(mys);
-        }
+    var all = []; 
+    var typeLevel = {}; 
+    myJSON.filter(function(a,b,c) { if ( a.level > 10 && a.type !== coverLetterType && ( typeLevel[a.type] == undefined || a.level > typeLevel[a.type] ) ) { typeLevel[a.type] = a.level;} return 1});
+    myJSON.filter(function(a,b,c) { if ( a.found == 1 && a.type !== coverLetterType ) { all.push(a.type);} return 1});
+    var types = all.filter(function(el,i,a) { return (i==a.indexOf(el)); }).sort(function(a,b) { return typeLevel[b] - typeLevel[a]; });
+
+    myJSON.filter(function(a,b,c) { if ( a.type == coverLetterType && a.level > 0 ) { return 1};}).forEach(function(e) {
+        addDocChild(e.line,myspan,"letterHead");
+    });
+
+    for ( var i = 0; i < types.length; i++ ) {
+        var secEle = myspan;
+        myJSON.filter(function(a,b,c) { if ( a.type == types[i] && a.level > 10 ) { return 1}}).forEach(function(e) {
+            tmpEle = addDocChild(e.line,secEle,"sectionHead");
+            if ( secEle == myspan ) {
+                secEle = tmpEle;
+            }
+            else {
+                tmpEle.className = "subHead";
+            }
+        });
+   
+        myJSON.filter(function(a,b,c) { if ( a.type == types[i] && Math.abs(a.level) <= 10 && mykeys[a.id].found == 1 ) { return 1}}).forEach(function(e) {
+            addDocChild(e.line,secEle);
+        });
+    
+        myJSON.filter(function(a,b,c) { if ( a.type == types[i] && a.level < -10 ) { return 1}}).forEach(function(e) {
+            addDocChild(e.line,secEle,"sectionTail");
+        });
     }
+
+    myJSON.filter(function(a,b,c) { if ( a.type == coverLetterType && a.level < 0 ) { return 1}}).forEach(function(e) {
+        addDocChild(e.line,myspan,"letterTail");
+    });
+
     document.getElementById('noprint').classList.toggle('noprint');
 }

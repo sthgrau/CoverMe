@@ -1,16 +1,17 @@
 <html>
 <head><title>CoverMe</title></head>
 <body onload="fillFonts()">
-<style type="text/css">#output { font-size: 1.5em; } .noprint { display: none; } input.eid { width: 200px; } input.elevel { width: 30px; } input.etype { width: 60px; } input.eline { width: 80%; } </style>
+<style type="text/css">span.letterHead:after,span.sectionHead:after { content: "\a"; white-space: pre;} output a:hover, a:visited, a:link, a:active { text-decoration: none; color: #000000;} body { font-size: 1.5em;  } #output { font-size: .7em; } .noprint { display: none; } input.eid { width: 200px; } input.elevel { width: 30px; } input.etype { width: 60px; } input.eline { width: 80%; } </style>
 <script src="app.js"></script>
 <div id="noprint">
 <div id="profile" style="width: 100%; height: auto;">
 <textarea id="rawProfile" style="width: 100%; height: 10%;"></textarea>
+<button id="newRemote" title="Initialize new profile" onclick="loadProfile('new')">New Profile</button>
 Username: <input id="username" value="sthgrau" style="width: 60px;">
 <button id="loadRemote" title="Load from remote database" onclick="loadProfile('remote')">Load remote</button>
 <button id="loadLocal" title="Load profile from local storage" onclick="loadProfile('local')">Load local</button>
 <button id="saveLocal" title="Save profile to local storage" onclick="saveProfile('local')">Save local</button>
-<button id="saveRemote" title="Save profile to remote storage" onclick="saveProfile('remote')">Save remote</button>
+<button id="saveRemote" title="Save profile to remote storage" onclick="if ( document.getElementById('username').value ) { saveProfile('remote'); } else { alert('You need a username to save'); }">Save remote</button>
 <button id="showHideEditor" title="Show editor" onclick="document.getElementById('lineItems').classList.toggle('noprint'); this.innerText = ( this.innerText == 'Show editor' ) ? 'Hide editor' : 'Show editor';" style="float: right;">Show editor</button>
 <div id="lineItems" class="noprint">
 </div>
